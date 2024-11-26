@@ -39,10 +39,13 @@ struct Fish
 std::vector<Fish> fishes;
 bool fish_caught = false;
 
+float timer;
+float milli_delay = 0;
+float second_delay = 0;
+
 int score = 0;
 
 void UpdateDrawFrame();
-
 int main(void)
 {
 	InitWindow(WIDTH, HEIGHT, "Fishing Game");
@@ -59,7 +62,7 @@ int main(void)
 	#if defined(PLATFORM_WEB)
     	emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
 	#else
-		//SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
+		SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
 		//--------------------------------------------------------------------------------------
 
 		// Main game loop
@@ -76,15 +79,19 @@ int main(void)
 
 void UpdateDrawFrame()
 {
+	milli_delay += 0.01;
+	second_delay += 1;
 	BeginDrawing();
-	
 	
 	// std::cout << "Font base size: " << font.baseSize << std::endl;
 	// std::cout << "Glyph count: " << font.glyphCount << std::endl;
 
+	std::cout << timer << '\n';
+
 	if (game_state == GAME)
 	{
 		ClearBackground(WHITE);
+		DrawText(std::to_string(timer).c_str(), 400, 20, 20, BLACK);
 
 		DrawFPS(20, HEIGHT-20);
 
@@ -93,6 +100,18 @@ void UpdateDrawFrame()
 		DrawTexture(floor_tex, 0, HEIGHT-floor_tex.height, WHITE);
 
 		DrawLine(GetMouseX(), 0, GetMouseX(), GetMouseY(), BLACK);
+		if (milli_delay >= GetFPS()/100)
+		{
+			milli_delay = 0;
+			timer += 1*GetFrameTime();
+		}
+
+		if (milli_delay >= .99999)
+		{
+			timer += 1;
+			int decimals = static_cast<int>(round(timer));
+			timer = timer - decimals;
+		}
 
 		for (int i = 0; i < fishes.size(); i++)
 		{
@@ -175,7 +194,11 @@ void UpdateDrawFrame()
 	else if (game_state == LOSE)
 	{
 		ClearBackground(BLACK);
-		DrawText("NO FISH!", WIDTH/2, 200, 40, WHITE);
+		DrawText("YOU LOSE!", WIDTH/2-MeasureText("YOU LOSE!", 40)/2, 100, 40, WHITE);
+		DrawText("ALL FISH ARE GONE!", WIDTH/2-MeasureText("ALL FISH ARE GONE!", 40)/2, 160, 40, WHITE);
+
+		std::string score_str = "YOUR SCORE: " + std::to_string(timer);
+		DrawText(score_str.c_str(), WIDTH/2-MeasureText(score_str.c_str(), 40)/2, 220, 40, WHITE);
 	}
 	
 	std::string score_text = "Score: " + std::to_string(score);
