@@ -92,6 +92,7 @@ void UpdateDrawFrame()
 	{
 		ClearBackground(WHITE);
 		DrawText(std::to_string(timer).c_str(), 400, 20, 20, BLACK);
+		DrawText("By Jesse Sher", WIDTH-MeasureText("By Jesse Sher", 20)-20, 20, 20, BLACK);
 
 		DrawFPS(20, HEIGHT-20);
 
